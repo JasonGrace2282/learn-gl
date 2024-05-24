@@ -2,30 +2,12 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include <fstream>
 #include <math.h>
+
+#include "shader.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-
-char *read(const char *filename, char *buffer, const unsigned int BUF_MAX_SIZE)
-{
-    FILE *ptr = fopen(filename, "r");
-    if (ptr == NULL)
-    {
-        std::cout << "Could not open file";
-        exit(-1);
-    }
-    unsigned int i = 0;
-    char ch;
-    while ((ch = fgetc(ptr)) != EOF && i < BUF_MAX_SIZE-1) {
-        buffer[i] = ch;
-        i++;
-    }
-    fclose(ptr);
-    buffer[i] = '\0';
-    return buffer;
-}
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -34,8 +16,6 @@ const unsigned int SCR_HEIGHT = 600;
 const unsigned int MAX_LEN = 512;
 char vBuffer[MAX_LEN];
 char fBuffer[MAX_LEN];
-const char *vertexShaderSource = read("src/main.vert", vBuffer, MAX_LEN);
-const char *fragmentShaderSource = read("src/main.frag", fBuffer, MAX_LEN);
 
 int main()
 {
@@ -67,45 +47,8 @@ int main()
     }
 
 
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-    int success;
-    char infoLog[MAX_LEN];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, MAX_LEN, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, MAX_LEN, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, MAX_LEN, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Shader shader("src/main.vert", "src/main.frag");
+
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -151,10 +94,9 @@ int main()
         // This is how to use uniforms
         // int colorUniformLocation = glGetUniformLocation(shaderProgram, "color");
         // glUniform4f(colorUniformLocation, 0.0f, green, 0.0f, 1.0f);
-        glUseProgram(shaderProgram);
+        shader.use();
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
  
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -162,7 +104,6 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
     return 0;
