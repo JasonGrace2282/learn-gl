@@ -14,8 +14,6 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 const unsigned int MAX_LEN = 512;
-char vBuffer[MAX_LEN];
-char fBuffer[MAX_LEN];
 
 int main()
 {
