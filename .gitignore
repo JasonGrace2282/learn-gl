@@ -2,6 +2,5 @@
 *.d
 src/build/
 output/
-.vscodeinclude/*
 .vscode
-include/glad
+include/*
