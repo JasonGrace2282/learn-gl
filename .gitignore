@@ -3,4 +3,8 @@
 src/build/
 output/
 .vscode
+
+# these are too big and irrelevant
 include/*
+stb_image.*
+src/gl.cpp
